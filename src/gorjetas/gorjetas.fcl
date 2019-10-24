@@ -1,0 +1,49 @@
+FUNCTION_BLOCK gorjetas // Definição de Bloco, pode ter mais de um por arquivo
+
+VAR_INPUT				// Define variável de entradas
+	servico : REAL;
+	comida : REAL;
+	
+END_VAR
+
+VAR_OUTPUT				// Define variável de saída
+	gorjeta : REAL;
+END_VAR
+
+FUZZIFY servico			// Fuzzify variável de entrada 
+	TERM ruim		:= (0,1) (4,0); 
+	TERM bom		:= (1,0) (4,1) (6,1) (9,0); 
+	TERM excelente		:= (6,0) (10,1); 
+END_FUZZIFY
+
+FUZZIFY comida			// Fuzzify variável de entrada 
+	TERM horrivel		:= (0,1) (1,1) (3,0); 
+	TERM boa		:= (3,0) (5,1) (7,0); 
+	TERM deliciosa		:= (7,0) (9,1);
+END_FUZZIFY
+
+DEFUZZIFY gorjeta		// Defuzzify variável de saída 
+	TERM pequena 	:= (0,0) (5,1) (10,0);
+	TERM media 	:= (10,0) (15,1) (20,0);
+	TERM grande 	:= (20,0) (25,1) (30,0);
+	METHOD 			: COG;		// Use 'Center Of Gravity' como método de defuzzification
+	DEFAULT 		:= 0;		// Valor padrão é 0 (se nenhuma regra, ativa o defuzzifier)
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	AND 	: MIN;	// Use 'min' para 'and' (também está implicito usar 'max' para 'or' para completar / usar a Lei de DeMorgan)
+	ACT 	: MIN;	// Use 'min' método de ativação 
+	ACCU 	: MAX;	// Use 'max' método de acumulação
+	
+	RULE 1 	: IF servico IS ruim OR comida IS horrivel 
+                    THEN gorjeta IS pequena;
+	RULE 2 	: IF servico IS bom
+                    THEN gorjeta IS media;
+	RULE 3 	: IF servico IS excelente AND comida IS deliciosa 
+                    THEN gorjeta IS grande;
+        RULE 4 	: IF comida IS boa
+                    THEN gorjeta IS media;
+	
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK  
